@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nitovo Healthcare Start Page — Wide (v3.5 Colors)</title>
+  <style>
+    :root{
+      --bg:#3B5B8C; --card:#FFFFFF; --text:#0f172a; --ring:#e5e7eb;
+      --accent:#1f2937; --accent-fg:#ffffff; --button:#ffffff; --button-text:#111827;
+      --focus:#93c5fd; --drop:#0ea5e9;
+      --col-min: 200px; /* kept internal (no UI) */
+      --body-text:#ffffff; /* new: overall page text color */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{ margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; background: var(--bg); color: var(--body-text); }
+    .wrap{max-width: 1800px; width: min(100%, 1800px); margin: 32px auto; padding: 0 clamp(10px, 2.5vw, 28px) 36px;}
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 12px;}
+    h1[contenteditable="true"]{ font-size: clamp(18px, 3.5vw, 26px); margin:0; letter-spacing:0.2px; padding:2px 6px; border-radius:8px; outline: none; }
+    h1[contenteditable="true"]:focus{ background: rgba(255,255,255,.12); box-shadow: 0 0 0 2px var(--focus) inset; }
+    .actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .btn{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:10px; border:1px solid var(--ring); background: var(--button); color: var(--button-text); box-shadow: 0 1px 2px rgba(0,0,0,.06); cursor:pointer; user-select:none; font-weight:600; font-size:13px; transition: transform .05s ease, box-shadow .15s ease, background .2s ease; }
+    .btn:hover{box-shadow:0 4px 20px rgba(0,0,0,.12)}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background: var(--accent); color: var(--accent-fg); border-color: transparent;}
+    .btn.small{padding:7px 10px; font-weight:600; font-size:12px; border-radius:9px}
+
+    .columns{ display:grid; grid-template-columns: repeat(auto-fit, minmax(var(--col-min), 1fr)); gap: 10px; align-items:start; }
+
+    .column{ min-height: 120px; background: rgba(255,255,255,.06); border: 1px dashed rgba(255,255,255,.25); border-radius: 12px; padding: 8px; position: relative; }
+    .column.drag-target{ outline: 2px dashed var(--drop); outline-offset: 2px; }
+    .column.dragging{ opacity: 0.7; }
+
+    .col-header{ display:flex; align-items:center; justify-content:space-between; gap:6px; margin: 2px 0 6px; }
+    .col-title[contenteditable="true"]{ outline:none; padding:2px 6px; border-radius:8px; font-weight:700; color:var(--body-text); font-size:14px; }
+    .col-title[contenteditable="true"]:focus{ background: rgba(255,255,255,.12); box-shadow: 0 0 0 2px var(--focus) inset; }
+    .col-drag-handle{ width:28px; height:28px; border-radius:8px; border:1px solid var(--ring); background:#fff; color:#111827; cursor:grab; display:inline-flex; align-items:center; justify-content:center; font-size:16px; }
+    .locked .col-drag-handle{ cursor:not-allowed; opacity:.5; }
+    .col-drag-handle:active{ cursor:grabbing; }
+
+    .item{ display:flex; align-items:center; gap:10px; background: var(--card); color: var(--text); border:1px solid var(--ring); border-radius:12px; padding:10px 10px; box-shadow: 0 1px 2px rgba(0,0,0,.08); min-height:44px; cursor:grab; position:relative; margin:6px 2px; }
+    .locked .item{ cursor:default; }
+    .item:active{cursor:grabbing}
+    .item.dragging{opacity:.6; box-shadow:0 6px 24px rgba(0,0,0,.18)}
+    .drop-marker{position:absolute;left:6px;right:6px;height:0;border-top:2px dashed var(--drop);display:none}
+    .item.drop-before .drop-marker{top:-5px;display:block}
+    .item.drop-after .drop-marker{bottom:-5px;display:block}
+
+    .favicon{width:18px; height:18px; border-radius:5px; flex:0 0 18px;}
+    .main{flex:1 1 auto; min-width:0}
+    .title{font-weight:700; font-size:13px; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color: inherit;}
+    .link{ color: inherit; text-decoration: none; }
+    .controls{ display:flex; gap:4px; align-items:center }
+    .iconbtn{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:8px; border:1px solid var(--ring); background: #fff; color:#111827; cursor:pointer; font-size:12px; }
+    .iconbtn:hover{background:#f8fafc}
+    .iconbtn[disabled]{ opacity:.5; cursor:not-allowed; }
+
+    body.compact .wrap{ margin: 24px auto; padding-bottom: 20px; }
+    body.compact .columns{ gap: 8px; }
+    body.compact .column{ padding: 6px; }
+    body.compact .item{ padding: 8px 8px; margin: 5px 2px; min-height: 40px; gap: 8px; }
+    body.compact .favicon{ width:16px; height:16px; border-radius:4px; }
+    body.compact .title{ font-size: 12px; }
+    body.compact .iconbtn{ width:24px; height:24px; border-radius:7px; }
+
+    /* Settings Panel */
+    .settings-overlay{ position: fixed; inset: 0; background: rgba(0,0,0,.35); display:none; z-index: 50; }
+    .settings-overlay.open{ display:block; }
+    .settings-panel{
+      position: fixed; top:0; right:-420px; width: 400px; height: 100%;
+      background: #fff; color: #111827; box-shadow: -8px 0 24px rgba(0,0,0,.25);
+      border-left: 1px solid #e5e7eb; z-index: 60; transition: right .25s ease;
+      display:flex; flex-direction:column;
+    }
+    .settings-panel.open{ right:0; }
+    .settings-header{ padding: 14px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e5e7eb; }
+    .settings-title{ font-weight: 800; font-size: 16px; }
+    .settings-close{ border:1px solid #e5e7eb; background:#fff; border-radius:8px; width:30px; height:30px; cursor:pointer; }
+    .settings-body{ padding: 16px; display:flex; flex-direction: column; gap: 16px; overflow:auto; }
+    .setting-block{ border:1px solid #e5e7eb; border-radius:12px; padding: 12px; background:#fafafa; }
+    .setting-block h3{ margin: 0 0 8px; font-size: 14px; font-weight: 800; }
+    .setting-row{ display:flex; align-items:center; justify-content:space-between; gap: 10px; }
+    .form-note{ font-size:12px; color:#374151; margin-top: 6px; }
+    .switch{ position: relative; width: 48px; height: 28px; background:#e5e7eb; border-radius: 999px; cursor: pointer; border:1px solid #d1d5db; }
+    .switch::after{ content:""; position:absolute; top:2px; left:2px; width:24px; height:24px; background:#fff; border-radius:999px; transition:left .2s ease; box-shadow: 0 1px 1px rgba(0,0,0,.15); }
+    .switch.on{ background:#10b981; }
+    .switch.on::after{ left:22px; }
+    .danger{ background:#fee2e2; border-color:#fecaca; }
+    .danger h3{ color:#991b1b; }
+    .danger .btn{ background:#ef4444; color:#fff; border-color:transparent; }
+
+    /* Form controls */
+    .field{ display:flex; flex-direction:column; gap:6px; margin-bottom: 10px; }
+    .label{ font-weight:700; font-size:12px; color:#111827; }
+    .input, .select{ width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; color:#111827; font-size:13px; }
+    .row{ display:flex; gap:8px; }
+    .row .field{ flex:1; }
+    .help{ font-size:11px; color:#4b5563; }
+    .error{ color:#b91c1c; font-size:12px; margin-top:4px; display:none; }
+    .success{ color:#065f46; font-size:12px; margin-top:4px; display:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 id="pageTitle" contenteditable="true" spellcheck="false" aria-label="Edit page title">Nitovo Healthcare Start Page</h1>
+      </div>
+      <div class="actions">
+        <button id="settingsBtn" class="btn small" title="Open settings">Settings</button>
+        <input id="fileInput" type="file" accept=".json,application/json" style="display:none" />
+      </div>
+    </header>
+
+    <div id="columns" class="columns" aria-live="polite">
+      <div class="column" data-col="0">
+        <div class="col-header">
+          <div class="col-title" contenteditable="true" data-coltitle="0">Column 1</div>
+          <button class="col-drag-handle" title="Drag to move column" aria-label="Drag to move column" draggable="true">⋮⋮</button>
+        </div>
+      </div>
+      <div class="column" data-col="1">
+        <div class="col-header">
+          <div class="col-title" contenteditable="true" data-coltitle="1">Column 2</div>
+          <button class="col-drag-handle" title="Drag to move column" aria-label="Drag to move column" draggable="true">⋮⋮</button>
+        </div>
+      </div>
+      <div class="column" data-col="2">
+        <div class="col-header">
+          <div class="col-title" contenteditable="true" data-coltitle="2">Column 3</div>
+          <button class="col-drag-handle" title="Drag to move column" aria-label="Drag to move column" draggable="true">⋮⋮</button>
+        </div>
+      </div>
+      <div class="column" data-col="3">
+        <div class="col-header">
+          <div class="col-title" contenteditable="true" data-coltitle="3">Column 4</div>
+          <button class="col-drag-handle" title="Drag to move column" aria-label="Drag to move column" draggable="true">⋮⋮</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings UI -->
+  <div id="settingsOverlay" class="settings-overlay"></div>
+  <aside id="settingsPanel" class="settings-panel" aria-label="Settings panel" aria-hidden="true">
+    <div class="settings-header">
+      <div class="settings-title">Settings</div>
+      <button id="settingsClose" class="settings-close" aria-label="Close settings">✕</button>
+    </div>
+    <div class="settings-body">
+      <div class="setting-block">
+        <h3>Add site</h3>
+        <form id="addForm">
+          <div class="field">
+            <label class="label" for="siteUrl">URL</label>
+            <input id="siteUrl" class="input" type="url" placeholder="https://example.com" required />
+            <div class="help">We’ll add https:// for you if omitted.</div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label class="label" for="siteLabel">Label</label>
+              <input id="siteLabel" class="input" type="text" placeholder="Display name (optional)" />
+              <div class="help">Defaults to the site's hostname.</div>
+            </div>
+            <div class="field" style="flex:0 0 110px">
+              <label class="label" for="siteCol">Column</label>
+              <select id="siteCol" class="select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" style="align-items:center; justify-content:flex-start;">
+            <button id="addSubmit" class="btn primary small" type="submit">Add</button>
+            <div id="addSuccess" class="success">Added!</div>
+            <div id="addError" class="error">Enter a valid URL.</div>
+          </div>
+        </form>
+      </div>
+
+      <!-- REMOVED: Column width setting (per request) -->
+
+      <div class="setting-block">
+        <h3>Colors</h3>
+        <div class="field">
+          <label class="label" for="bgColor">Background</label>
+          <input id="bgColor" class="input" type="color" />
+        </div>
+        <div class="field">
+          <label class="label" for="pageTextColor">Page text</label>
+          <input id="pageTextColor" class="input" type="color" />
+        </div>
+        <div class="field">
+          <label class="label" for="cardTextColor">Card text</label>
+          <input id="cardTextColor" class="input" type="color" />
+        </div>
+        <div class="form-note">These are saved locally in your browser.</div>
+      </div>
+
+      <div class="setting-block">
+        <h3>Dense/Comfort mode</h3>
+        <div class="setting-row">
+          <div id="denseSwitch" class="switch" role="switch" aria-checked="false" tabindex="0"></div>
+        </div>
+        <div class="form-note">Toggle compact (dense) spacing. Off = comfort mode.</div>
+      </div>
+
+      <div class="setting-block">
+        <h3>Lock layout</h3>
+        <div class="setting-row">
+          <div id="lockSwitch" class="switch" role="switch" aria-checked="false" tabindex="0"></div>
+        </div>
+        <div class="form-note">When locked, drag/drop and reordering are disabled.</div>
+      </div>
+
+      <div class="setting-block">
+        <h3>Actions</h3>
+        <div class="setting-row" style="justify-content:flex-start; gap:8px; flex-wrap:wrap;">
+          <button id="exportBtn" class="btn small" title="Export your links to a file">Export</button>
+          <button id="importBtn" class="btn small" title="Import links from a file">Import</button>
+          <button id="clearBtn" class="btn small" title="Remove all saved sites">Clear all</button>
+        </div>
+      </div>
+
+      <div class="setting-block danger">
+        <h3>Reset layout</h3>
+        <button id="resetBtn" class="btn">Reset columns & titles</button>
+        <div class="form-note">Clears saved links/titles/column order. Your page title remains.</div>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    (function(){
+// --- LOAD INITIAL DATA FROM CLOUD JSON ---
+fetch('data-for-index.json')
+  .then(r => r.json())
+  .then(json => {
+    const existing = localStorage.getItem('startColumns_v2');
+    if (!existing) {
+      if (json.columns) {
+        localStorage.setItem('startColumns_v2', JSON.stringify(json.columns));
+      }
+      if (json.titles) {
+        localStorage.setItem('startColTitles_v1', JSON.stringify(json.titles));
+      }
+    }
+    
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+  })
+  .catch(err => {
+    console.error('Could not load cloud JSON:', err);
+    
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+  });
+
+      const STORAGE_KEY = 'startColumns_v2';
+      const TITLES_KEY  = 'startColTitles_v1';
+      const LOCK_KEY    = 'startLocked_v1';
+      const COMPACT_KEY = 'startCompact_v1';
+      const LEGACY_COLS = 'startColumns_v1';
+      const LEGACY_LIST = 'startLinks_v3';
+      const PAGE_TITLE  = 'startTitle_v1';
+
+      // NEW: theme keys
+      const THEME_BG_KEY   = 'startThemeBg_v1';
+      const THEME_BODY_KEY = 'startThemeBody_v1';
+      const THEME_CARDTXT_KEY = 'startThemeCardText_v1';
+
+      const $ = sel => document.querySelector(sel);
+      const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+      const fileInput = $('#fileInput');
+      const pageTitle = $('#pageTitle');
+
+      const settingsBtn = $('#settingsBtn');
+      const settingsOverlay = $('#settingsOverlay');
+      const settingsPanel = $('#settingsPanel');
+      const settingsClose = $('#settingsClose');
+
+      // removed: colWidth references
+      const denseSwitch = $('#denseSwitch');
+      const lockSwitch  = $('#lockSwitch');
+      const resetBtn    = $('#resetBtn');
+
+      const exportBtn   = $('#exportBtn');
+      const importBtn   = $('#importBtn');
+      const clearBtn    = $('#clearBtn');
+
+      // Add form
+      const addForm     = $('#addForm');
+      const siteUrl     = $('#siteUrl');
+      const siteLabel   = $('#siteLabel');
+      const siteCol     = $('#siteCol');
+      const addSuccess  = $('#addSuccess');
+      const addError    = $('#addError');
+
+      // NEW: color pickers
+      const bgColor       = $('#bgColor');
+      const pageTextColor = $('#pageTextColor');
+      const cardTextColor = $('#cardTextColor');
+
+      function loadPageTitle(){ try{ const t=localStorage.getItem(PAGE_TITLE); if(t && t.trim()) pageTitle.textContent=t; }catch{} }
+      function savePageTitle(){ const t=(pageTitle.textContent||'').trim(); localStorage.setItem(PAGE_TITLE, t || 'My Start Page'); }
+      let ptimer=null; pageTitle.addEventListener('input', ()=>{ clearTimeout(ptimer); ptimer=setTimeout(savePageTitle,300); }); pageTitle.addEventListener('blur', savePageTitle);
+
+      function isLocked(){ return localStorage.getItem(LOCK_KEY) === '1'; }
+      function setLocked(v){
+        localStorage.setItem(LOCK_KEY, v ? '1' : '0');
+        document.body.classList.toggle('locked', !!v);
+        lockSwitch.classList.toggle('on', !!v);
+        lockSwitch.setAttribute('aria-checked', v ? 'true' : 'false');
+        $$('.iconbtn[data-role="up"], .iconbtn[data-role="down"]').forEach(b => b.disabled = !!v);
+        $$('.item').forEach(it => it.draggable = !v);
+      }
+
+      function isCompact(){ return localStorage.getItem(COMPACT_KEY) === '1'; }
+      function setCompact(v){
+        localStorage.setItem(COMPACT_KEY, v ? '1' : '0');
+        document.body.classList.toggle('compact', !!v);
+        denseSwitch.classList.toggle('on', !!v);
+        denseSwitch.setAttribute('aria-checked', v ? 'true' : 'false');
+      }
+
+      function defaultData(){ return [[],[],[],[]]; }
+      function defaultTitles(){ return ['Column 1','Column 2','Column 3','Column 4']; }
+
+      function loadData(){
+        try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw){ const parsed=JSON.parse(raw); if(Array.isArray(parsed)&&parsed.length===4) return parsed; } }catch{}
+        try{ const raw3=localStorage.getItem(LEGACY_COLS); if(raw3){ const p3=JSON.parse(raw3); if(Array.isArray(p3)&&p3.length===3){ const v4=[p3[0]||[], p3[1]||[], p3[2]||[], []]; saveData(v4); localStorage.removeItem(LEGACY_COLS); return v4; } } }catch{}
+        try{ const raw1=localStorage.getItem(LEGACY_LIST); if(raw1){ const list=JSON.parse(raw1); if(Array.isArray(list)){ const v4=[list,[],[],[]]; saveData(v4); localStorage.removeItem(LEGACY_LIST); return v4; } } }catch{}
+        return defaultData();
+      }
+      function saveData(cols){ localStorage.setItem(STORAGE_KEY, JSON.stringify(cols)); }
+
+      function loadTitles(){
+        try{ const raw=localStorage.getItem(TITLES_KEY); if(raw){ const t=JSON.parse(raw); if(Array.isArray(t)&&t.length===4) return t; } }catch{}
+        return defaultTitles();
+      }
+      function saveTitles(t){ localStorage.setItem(TITLES_KEY, JSON.stringify(t)); }
+
+      // THEME helpers
+      function applyTheme({bg, bodyText, cardText}){
+        if(bg) document.documentElement.style.setProperty('--bg', bg);
+        if(bodyText) document.documentElement.style.setProperty('--body-text', bodyText);
+        if(cardText) document.documentElement.style.setProperty('--text', cardText);
+      }
+      function loadTheme(){
+        let bg = '#3B5B8C', bodyText = '#ffffff', cardText = '#0f172a';
+        try{ const v = localStorage.getItem(THEME_BG_KEY); if(v) bg = v; }catch{}
+        try{ const v = localStorage.getItem(THEME_BODY_KEY); if(v) bodyText = v; }catch{}
+        try{ const v = localStorage.getItem(THEME_CARDTXT_KEY); if(v) cardText = v; }catch{}
+        applyTheme({bg, bodyText, cardText});
+        // seed inputs
+        if(bgColor) bgColor.value = toColorInput(bg);
+        if(pageTextColor) pageTextColor.value = toColorInput(bodyText);
+        if(cardTextColor) cardTextColor.value = toColorInput(cardText);
+      }
+      function toColorInput(val){
+        // normalize to 7-char hex if possible; otherwise, fallback to #000000
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.fillStyle = val; // lets browser parse
+        const rgb = ctx.fillStyle; // computed rgb(a)
+        // convert to hex
+        const m = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(rgb);
+        if(m){
+          const r = Number(m[1]).toString(16).padStart(2,'0');
+          const g = Number(m[2]).toString(16).padStart(2,'0');
+          const b = Number(m[3]).toString(16).padStart(2,'0');
+          return `#${r}${g}${b}`;
+        }
+        return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(val) ? (val.length===4
+          ? `#${val[1]}${val[1]}${val[2]}${val[2]}${val[3]}${val[3]}` : val) : '#000000';
+      }
+
+      function render(){
+        const data = loadData(); const titles = loadTitles(); const locked = isLocked();
+        $$('.col-title').forEach((el,i)=>{ el.textContent = titles[i] || defaultTitles()[i]; });
+        $$('.column').forEach(col => { [...col.querySelectorAll('.item, .placeholder')].forEach(n=>n.remove()); col.classList.remove('drag-target','dragging'); });
+
+        $$('.column').forEach((c, i) => c.dataset.col = String(i));
+        $$('.col-title').forEach((t, i) => t.dataset.coltitle = String(i));
+
+        data.forEach((list, colIdx) => {
+          const colEl = document.querySelector(`.column[data-col="${colIdx}"]`);
+          if(!colEl) return;
+          if(list.length===0){
+            const p=document.createElement('div'); p.className='placeholder'; p.style.cssText='opacity:.7;color:var(--body-text);padding:6px;font-size:12px'; p.textContent='Empty'; colEl.appendChild(p);
+          }
+          list.forEach((entry, idx) => {
+            const item=document.createElement('div'); item.className='item'; item.setAttribute('role','link'); item.setAttribute('tabindex','0');
+            item.draggable=!locked; item.dataset.col=colIdx; item.dataset.index=idx;
+
+            const marker=document.createElement('div'); marker.className='drop-marker'; item.appendChild(marker);
+            const fav=document.createElement('img'); fav.className='favicon'; fav.src=faviconFor(entry.url); fav.alt='';
+            const main=document.createElement('div'); main.className='main';
+            const a=document.createElement('a'); a.className='link title'; a.href=entry.url; a.textContent=entry.label || hostnameFrom(entry.url); a.target='_blank'; a.rel='noopener'; main.appendChild(a);
+
+            const controls=document.createElement('div'); controls.className='controls';
+            const up=document.createElement('button'); up.className='iconbtn'; up.dataset.role='up'; up.title='Move up'; up.setAttribute('aria-label','Move up'); up.innerHTML='&#8593;'; up.disabled=locked;
+            up.addEventListener('click',(e)=>{ if(locked) return; e.stopPropagation(); const d=loadData(); const L=d[colIdx]; if(idx>0){ const [m]=L.splice(idx,1); L.splice(idx-1,0,m); saveData(d); 
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render(); } });
+            const down=document.createElement('button'); down.className='iconbtn'; down.dataset.role='down'; down.title='Move down'; down.setAttribute('aria-label','Move down'); down.innerHTML='&#8595;'; down.disabled=locked;
+            down.addEventListener('click',(e)=>{ if(locked) return; e.stopPropagation(); const d=loadData(); const L=d[colIdx]; if(idx<L.length-1){ const [m]=L.splice(idx,1); L.splice(idx+1,0,m); saveData(d); 
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render(); } });
+            const del=document.createElement('button'); del.className='iconbtn'; del.title='Delete'; del.setAttribute('aria-label','Delete'); del.innerHTML='<span aria-hidden="true" style="font-weight:800;font-size:16px;line-height:1">×</span>';
+            del.addEventListener('click',(e)=>{ e.stopPropagation(); const d=loadData(); d[colIdx].splice(idx,1); saveData(d); 
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render(); });
+            controls.appendChild(up); controls.appendChild(down); controls.appendChild(del);
+
+            item.addEventListener('click',(e)=>{ if(e.target.closest('.iconbtn')) return; window.open(entry.url,'_blank','noopener'); });
+
+            if(!locked){
+              item.addEventListener('dragstart',(e)=>{
+                if(e.target.closest('.iconbtn') || e.target.closest('a.link')){ e.preventDefault(); return; }
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed='move';
+                try{ e.dataTransfer.setData('text/plain', JSON.stringify({ fromCol: item.dataset.col, fromIdx: item.dataset.index })); }catch{}
+                $$('.column').forEach(c=>c.classList.add('drag-target'));
+              });
+              item.addEventListener('dragend',()=>{
+                item.classList.remove('dragging','drop-before','drop-after');
+                $$('.column').forEach(c=>c.classList.remove('drag-target','dragging'));
+                $$('.item').forEach(el=>el.classList.remove('drop-before','drop-after'));
+              });
+
+              item.addEventListener('dragover',(e)=>{ e.preventDefault(); const r=item.getBoundingClientRect(); const before=(e.clientY-r.top)<r.height/2; item.classList.toggle('drop-before',before); item.classList.toggle('drop-after',!before); });
+              item.addEventListener('dragleave',()=>{ item.classList.remove('drop-before','drop-after'); });
+              item.addEventListener('drop',(e)=>{
+                e.preventDefault();
+                const dragging=document.querySelector('.item.dragging'); if(!dragging) return;
+                const fromCol=parseInt(dragging.dataset.col); const fromIdx=parseInt(dragging.dataset.index);
+                const toCol=colIdx; let toIdx=idx+(item.classList.contains('drop-after')?1:0);
+                moveItem(fromCol,fromIdx,toCol,toIdx);
+              });
+            }
+
+            item.appendChild(fav); item.appendChild(main); item.appendChild(controls);
+            colEl.appendChild(item);
+          });
+
+          if(!locked){
+            colEl.addEventListener('dragover',(e)=>{ e.preventDefault(); colEl.classList.add('drag-target'); }, {capture:true});
+            colEl.addEventListener('dragleave',()=>{ colEl.classList.remove('drag-target'); }, {capture:true});
+            colEl.addEventListener('drop',(e)=>{
+              e.preventDefault();
+              colEl.classList.remove('drag-target');
+              const dragging=document.querySelector('.item.dragging'); 
+              if(!dragging) return;
+              const fromCol=parseInt(dragging.dataset.col); const fromIdx=parseInt(dragging.dataset.index);
+              const toCol=colIdx;
+
+              const items=Array.from(colEl.querySelectorAll('.item'));
+              let toIdx = items.length;
+              const y = e.clientY;
+              for(let i=0;i<items.length;i++){
+                const rect = items[i].getBoundingClientRect();
+                if(y < rect.top + rect.height/2){ toIdx = i; break; }
+              }
+              moveItem(fromCol,fromIdx,toCol,toIdx);
+            }, {capture:true});
+          }
+        });
+
+        attachTitleEditors();
+        attachColumnDragHandlers();
+      }
+
+      function moveItem(fromCol, fromIdx, toCol, toIdx){
+        const d = loadData();
+        if(fromCol<0||fromCol>3||toCol<0||toCol>3) return;
+        const fromList=d[fromCol]; const toList=d[toCol];
+        if(fromIdx<0||fromIdx>=fromList.length) return;
+        const [moved]=fromList.splice(fromIdx,1);
+        if(toIdx<0) toIdx=0; if(toIdx>toList.length) toIdx=toList.length;
+        toList.splice(toIdx,0,moved);
+        saveData(d); 
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+      }
+
+      function moveColumn(fromCol, toCol){
+        if(fromCol===toCol) return;
+        const data = loadData();
+        const titles = loadTitles();
+        const [movedCol] = data.splice(fromCol, 1);
+        data.splice(toCol, 0, movedCol);
+        const [movedTitle] = titles.splice(fromCol, 1);
+        titles.splice(toCol, 0, movedTitle);
+        saveData(data);
+        saveTitles(titles);
+        
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+      }
+
+      function attachTitleEditors(){
+        $$('.col-title').forEach((el, i)=>{
+          el.oninput = null; el.onblur = null;
+          let timer=null;
+          const save = ()=>{
+            const titles = loadTitles();
+            titles[i] = (el.textContent||'').trim() || ('Column ' + (i+1));
+            saveTitles(titles);
+          };
+          el.addEventListener('input', ()=>{ clearTimeout(timer); timer=setTimeout(save,300); });
+          el.addEventListener('blur', save);
+        });
+      }
+
+      function attachColumnDragHandlers(){
+        const locked = isLocked();
+        $$('.col-drag-handle').forEach((handle, idx) => {
+          handle.draggable = !locked;
+          handle.addEventListener('dragstart', (e) => {
+            if(locked){ e.preventDefault(); return; }
+            const colEl = handle.closest('.column');
+            const fromCol = parseInt(colEl.dataset.col);
+            colEl.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            try{ e.dataTransfer.setData('text/col', String(fromCol)); }catch{}
+            $$('.column').forEach(c=>c.classList.add('drag-target'));
+          });
+          handle.addEventListener('dragend', () => {
+            $$('.column').forEach(c=>c.classList.remove('drag-target','dragging'));
+          });
+        });
+
+        $$('.column').forEach((targetCol) => {
+          targetCol.addEventListener('dragover', (e) => { e.preventDefault(); });
+          targetCol.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const fromColData = e.dataTransfer.getData('text/col');
+            if(fromColData !== ''){
+              const fromCol = parseInt(fromColData);
+              const rect = targetCol.getBoundingClientRect();
+              const before = e.clientX < rect.left + rect.width / 2;
+              const cols = Array.from(document.querySelectorAll('.column'));
+              let toCol = cols.indexOf(targetCol);
+              if(!before) toCol = Math.min(toCol + 1, cols.length - 1);
+              if(!before && fromCol < toCol) toCol -= 1;
+              moveColumn(fromCol, toCol);
+            }
+          });
+        });
+      }
+
+      // --- Settings behaviors ---
+      function openSettings(){
+        settingsOverlay.classList.add('open');
+        settingsPanel.classList.add('open');
+        settingsPanel.setAttribute('aria-hidden', 'false');
+      }
+      function closeSettings(){
+        settingsOverlay.classList.remove('open');
+        settingsPanel.classList.remove('open');
+        settingsPanel.setAttribute('aria-hidden', 'true');
+      }
+      settingsBtn.addEventListener('click', openSettings);
+      settingsOverlay.addEventListener('click', closeSettings);
+      settingsClose.addEventListener('click', closeSettings);
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSettings(); });
+
+      // Switches
+      denseSwitch.addEventListener('click', ()=> setCompact(!isCompact()));
+      denseSwitch.addEventListener('keydown', (e)=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); setCompact(!isCompact()); }});
+      lockSwitch.addEventListener('click', ()=> setLocked(!isLocked()));
+      lockSwitch.addEventListener('keydown', (e)=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); setLocked(!isLocked()); }});
+
+      // Actions
+      exportBtn.addEventListener('click', exportLinks);
+      importBtn.addEventListener('click', ()=>{ fileInput.value=''; fileInput.click(); });
+      clearBtn.addEventListener('click', () => {
+        if(confirm('Remove ALL links from all 4 columns?')){ localStorage.removeItem(STORAGE_KEY); 
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render(); }
+      });
+
+      function exportLinks(){
+        const payload = JSON.stringify({ version: 3, columns: loadData(), titles: loadTitles() }, null, 2);
+        const blob = new Blob([payload], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); const stamp = new Date().toISOString().slice(0,10);
+        a.href = url; a.download = 'start-page-columns-' + stamp + '.json'; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      fileInput && fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0]; if(!file) return;
+        try{
+          const text = await file.text(); const parsed = JSON.parse(text);
+          let cols = null, titles = null;
+          if(parsed && Array.isArray(parsed.columns)) cols = parsed.columns;
+          else if(Array.isArray(parsed.links)) cols = [parsed.links, [], [], []];
+          else if(Array.isArray(parsed)) cols = [parsed, [], [], []];
+          if(parsed && Array.isArray(parsed.titles)) titles = parsed.titles;
+          if(!cols){ alert('This file does not look like a valid export.'); return; }
+          const cleaned = cols.slice(0,4).map((list)=> (Array.isArray(list)? list:[])
+            .map(x => ({ url: (x && x.url)||'', label: (x && x.label)||'' }))
+            .map(x => ({ url: x.url, label: String(x.label||'').trim() || (function(){
+// --- LOAD INITIAL DATA FROM CLOUD JSON ---
+fetch('data-for-index.json')
+  .then(r => r.json())
+  .then(json => {
+    const existing = localStorage.getItem('startColumns_v2');
+    if (!existing) {
+      if (json.columns) {
+        localStorage.setItem('startColumns_v2', JSON.stringify(json.columns));
+      }
+      if (json.titles) {
+        localStorage.setItem('startColTitles_v1', JSON.stringify(json.titles));
+      }
+    }
+    
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+  })
+  .catch(err => {
+    console.error('Could not load cloud JSON:', err);
+    
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+  });
+ try { return new URL(x.url).hostname; } catch { return x.url; } })() }))
+            .filter(x => { try{ new URL(x.url); return true; } catch { return false; } }));
+          while(cleaned.length<4) cleaned.push([]);
+          const mode = confirm('OK = REPLACE all four columns with the imported file\nCancel = MERGE (deduplicate by URL within each column)') ? 'replace' : 'merge';
+          if(mode==='replace'){
+            saveData(cleaned);
+            if(titles){
+              const t4 = loadTitles();
+              titles.forEach((t,i)=>{ if(i<4 && typeof t==='string' && t.trim()) t4[i]=t; });
+              saveTitles(t4);
+            }
+          }else{
+            const existing = loadData();
+            const merged = existing.map((list, i) => {
+              const byUrl = new Map(list.map(e => [e.url, e]));
+              cleaned[i].forEach(e => byUrl.set(e.url, e));
+              return Array.from(byUrl.values());
+            });
+            saveData(merged);
+            if(titles){
+              const cur = loadTitles();
+              const t4 = cur.slice();
+              titles.forEach((t,i)=>{ if(i<4 && typeof t==='string' && t.trim()) t4[i]=t; });
+              saveTitles(t4);
+            }
+          }
+          
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+          alert('Import complete.');
+        }catch(err){ console.error(err); alert('Could not import that file.'); }
+      });
+
+      // Add form helpers
+      const LAST_COL_KEY = 'startLastCol_v1';
+      function loadLastCol(){ try{ const v=parseInt(localStorage.getItem(LAST_COL_KEY),10); if(!isNaN(v)&&v>=1&&v<=4) return v; }catch{} return 1; }
+      function saveLastCol(v){ localStorage.setItem(LAST_COL_KEY, String(v)); }
+
+      addForm.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        addSuccess.style.display='none'; addError.style.display='none';
+
+        let url = siteUrl.value.trim();
+        if(!url){ addError.textContent='Enter a URL.'; addError.style.display='block'; return; }
+        url = normalizeUrl(url);
+        if(!url){ addError.textContent='Enter a valid URL.'; addError.style.display='block'; return; }
+
+        let label = (siteLabel.value||'').trim();
+        if(!label){
+          try{ label = new URL(url).hostname; }catch{ label = url; }
+        }
+        let col = parseInt(siteCol.value,10); if(!(col>=1 && col<=4)) col = 1;
+
+        const d = loadData(); d[col-1].push({ url, label }); saveData(d); 
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+        saveLastCol(col);
+
+        siteUrl.value=''; siteLabel.value=''; siteUrl.focus();
+        addSuccess.style.display='block';
+        setTimeout(()=>{ addSuccess.style.display='none'; }, 1200);
+      });
+
+      // Reset
+      resetBtn.addEventListener('click', ()=>{
+        if(confirm('Reset columns, titles, and order? This cannot be undone.')){
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(TITLES_KEY);
+          
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+          alert('Layout reset.');
+        }
+      });
+
+      // Color picker bindings
+      function bindColorPicker(inputEl, key, cssVar){
+        if(!inputEl) return;
+        inputEl.addEventListener('input', ()=>{
+          const val = inputEl.value;
+          document.documentElement.style.setProperty(cssVar, val);
+        });
+        inputEl.addEventListener('change', ()=>{
+          const val = inputEl.value;
+          try{ localStorage.setItem(key, val); }catch{}
+        });
+      }
+
+      // Utils
+      function normalizeUrl(input){ try{ if(!/^https?:\/\//i.test(input.trim())) input='https://'+input.trim(); const url=new URL(input); return url.toString(); }catch(e){ return null; } }
+      function hostnameFrom(url){ try{ return new URL(url).hostname; }catch{ return url; } }
+      function faviconFor(url){ try{ return 'https://www.google.com/s2/favicons?sz=64&domain='+encodeURIComponent(new URL(url).hostname); } catch{ return ''; } }
+
+      // Init
+      loadPageTitle();
+      setLocked(isLocked());
+      setCompact(localStorage.getItem(COMPACT_KEY) === '1');
+      
+    // Smart merge versioning
+    const cloudVersion = json.version || 0;
+    const localVersion = parseInt(localStorage.getItem('startVersion')||'0');
+    if (cloudVersion > localVersion) {
+        // load cloud columns and titles but preserve user changes:
+        const localCols = JSON.parse(localStorage.getItem('startColumns_v2')||'[]');
+        const newCols = json.columns || [];
+        const merged = newCols.map((col,i)=>{
+            const existing = localCols[i]||[];
+            const urls = set(e['url'] for e in existing);
+            return existing + [e for e in col if e['url'] not in urls];
+        });
+        localStorage.setItem('startColumns_v2', JSON.stringify(merged));
+        if(json.titles){
+            const localTitles = JSON.parse(localStorage.getItem('startColTitles_v1')||'[]');
+            const titles = json.titles.map((t,i)=> localTitles[i] or t);
+            localStorage.setItem('startColTitles_v1', JSON.stringify(titles));
+        }
+        localStorage.setItem('startVersion', String(cloudVersion));
+    }
+
+    render();
+
+      // Theme init + bindings (after render to ensure inputs exist)
+      loadTheme();
+      bindColorPicker(bgColor, THEME_BG_KEY, '--bg');
+      bindColorPicker(pageTextColor, THEME_BODY_KEY, '--body-text');
+      bindColorPicker(cardTextColor, THEME_CARDTXT_KEY, '--text');
+    })();
+  </script>
+</body>
+</html>
